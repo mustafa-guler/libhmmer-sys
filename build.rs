@@ -1,6 +1,16 @@
 use std::{path::Path, process::Command};
 
 fn main() {
+    // configure build
+    //
+    // the reason we're not using the `autotools` crate is we need a pretty particular setup:
+    //
+    // we only want to compile libhmmer.a and libeasel.a, none of the binaries but the makefile
+    // that lets us do that is in `hmmer/src`, not `hmmer/`. This means that the `.make_target`
+    // configuration doesn't work.
+    //
+    // Instead we'll just run subcommands
+    // TODO: make sure autoconf and make exist and fail with informative error
     Command::new("autoconf")
         .current_dir("hmmer")
         .status()
@@ -9,6 +19,8 @@ fn main() {
         .current_dir("hmmer")
         .status()
         .expect("failed to configure");
+
+    // compile libhmmer
     Command::new("make")
         .arg("-j")
         .arg("8")
@@ -16,6 +28,7 @@ fn main() {
         .current_dir("hmmer/src")
         .status()
         .expect("failed to build libhmmer.a");
+    // compile libeasel
     Command::new("make")
         .arg("-j")
         .arg("8")
@@ -27,6 +40,10 @@ fn main() {
     let out_dir = std::env::var("OUT_DIR").unwrap();
     let out_dir = Path::new(&out_dir);
 
+    // generate rust bindings for only the functions we need
+    // hmmer has a ton of `#include`s in the headers, meaning that we get a lot of libc in our
+    // generated bindings unless we only `allowlist` exactly what we want
+    // TODO: generate in out_dir so it doesn't pollute `src`
     bindgen::builder()
         .header("hmmer/src/hmmer.h")
         .clang_arg("-Ihmmer/easel")
@@ -70,6 +87,7 @@ fn main() {
     std::fs::copy("hmmer/src/libhmmer.a", out_dir.join("libhmmer.a")).unwrap();
     std::fs::copy("hmmer/easel/libeasel.a", out_dir.join("libeasel.a")).unwrap();
 
+    // link both archives to our library
     println!("cargo:rustc-link-search={}", out_dir.display());
     println!("cargo:rustc-link-lib=static=hmmer");
     println!("cargo:rustc-link-lib=static=easel");
