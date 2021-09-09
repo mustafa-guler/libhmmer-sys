@@ -1,3 +1,4 @@
 [submodule "hmmer"]
 	path = hmmer
-	url = https://github.com/EddyRivasLab/hmmer.git
+	url = https://github.com/mustafa-guler/hmmer
+	branch = master
