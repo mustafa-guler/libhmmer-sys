@@ -9,9 +9,34 @@ categories = ["external-ffi-bindings", "science"]
 license = "BSD-3-Clause"
 readme = "README.md"
 
+# this was really manual
+# there's a ton of documentation included in hmmer we can't fully ignore,
+# since the `Makefile.in`s are still required to exist
+# without this we have an 18M crate, this cuts it to 2.7M
+exclude = [
+    "hmmer/tutorial/",
+    "hmmer/easel/demotic/examples",
+    "hmmer/easel/documentation/figures",
+    "hmmer/easel/miniapps/*.c",
+    "hmmer/documentation/userguide/inclusions/*.pdf",
+    "hmmer/testsuite/*.hmm",
+    "hmmer/tutorial/*.hmm",
+    "hmmer/autobuild/*.pl",
+    "hmmer/profmark/*.pl",
+    "hmmer/src/hmmpgmd_client_example.pl",
+    "hmmer/src/hmmpress.itest.pl",
+    "hmmer/test-speed/*.pl",
+    "hmmer/testsuite/*.pl",
+    "hmmer/src/impl_sse/p7_omx.ai",
+    "hmmer/release-notes",
+    "hmmer/easel/demotic/regress",
+    "hmmer/documentation/userguide/inclusions/*.ai",
+]
+
 [dependencies]
 
 [build-dependencies]
 bindgen = "0.59.1"
 fs_extra = "1.2.0"
 num_cpus = "^1.0"
+
