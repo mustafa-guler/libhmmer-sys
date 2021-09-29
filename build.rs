@@ -1,8 +1,21 @@
 use std::{path::Path, process::Command};
 
+use fs_extra::dir::CopyOptions;
+
 fn main() {
     #[cfg(not(target_family = "unix"))]
     compile_error!("hmmer only supports unix so libhmmer-sys also only supports unix");
+
+    let out_dir = std::env::var("OUT_DIR").unwrap();
+    let out_dir = Path::new(&out_dir);
+
+    let copy_options = CopyOptions {
+        skip_exist: true,
+        ..CopyOptions::new()
+    };
+
+    fs_extra::copy_items(&["hmmer"], out_dir, &copy_options).expect("failed to copy hmmer to target directory");
+    let hmmer_dir = out_dir.join("hmmer");
     
     // configure build
     //
@@ -15,11 +28,11 @@ fn main() {
     // Instead we'll just run subcommands
     // TODO: make sure autoconf and make exist and fail with informative error
     Command::new("autoconf")
-        .current_dir("hmmer")
+        .current_dir(&hmmer_dir)
         .status()
         .expect("failed to autoconf");
     Command::new(std::fs::canonicalize("./hmmer/configure").unwrap())
-        .current_dir("hmmer")
+        .current_dir(&hmmer_dir)
         .status()
         .expect("failed to configure");
 
@@ -30,7 +43,7 @@ fn main() {
         .arg("-j")
         .arg(&cpus)
         .arg("libhmmer.a")
-        .current_dir("hmmer/src")
+        .current_dir(hmmer_dir.join("src"))
         .status()
         .expect("failed to build libhmmer.a");
     // compile libeasel
@@ -38,12 +51,9 @@ fn main() {
         .arg("-j")
         .arg(&cpus)
         .arg("libeasel.a")
-        .current_dir("hmmer/easel")
+        .current_dir(hmmer_dir.join("easel"))
         .status()
         .expect("failed to build libeasel.a");
-
-    let out_dir = std::env::var("OUT_DIR").unwrap();
-    let out_dir = Path::new(&out_dir);
 
     // generate rust bindings for only the functions we need
     //
