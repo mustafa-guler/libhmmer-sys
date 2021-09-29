@@ -9,3 +9,4 @@ edition = "2018"
 
 [build-dependencies]
 bindgen = "0.59.1"
+num_cpus = "^1.0"

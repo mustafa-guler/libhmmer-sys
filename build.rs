@@ -1,6 +1,9 @@
 use std::{path::Path, process::Command};
 
 fn main() {
+    #[cfg(not(target_family = "unix"))]
+    compile_error!("hmmer only supports unix so libhmmer-sys also only supports unix");
+    
     // configure build
     //
     // the reason we're not using the `autotools` crate is we need a pretty particular setup:
@@ -20,10 +23,12 @@ fn main() {
         .status()
         .expect("failed to configure");
 
+    let cpus = num_cpus::get().to_string();
+
     // compile libhmmer
     Command::new("make")
         .arg("-j")
-        .arg("8")
+        .arg(&cpus)
         .arg("libhmmer.a")
         .current_dir("hmmer/src")
         .status()
@@ -31,7 +36,7 @@ fn main() {
     // compile libeasel
     Command::new("make")
         .arg("-j")
-        .arg("8")
+        .arg(&cpus)
         .arg("libeasel.a")
         .current_dir("hmmer/easel")
         .status()
@@ -41,46 +46,25 @@ fn main() {
     let out_dir = Path::new(&out_dir);
 
     // generate rust bindings for only the functions we need
+    //
     // hmmer has a ton of `#include`s in the headers, meaning that we get a lot of libc in our
-    // generated bindings unless we only `allowlist` exactly what we want
-    // TODO: generate in out_dir so it doesn't pollute `src`
+    // generated bindings unless we only `allowlist` elements that are prefixed with "p7" for the
+    // hmmer repo and "esl" for the easel repo
     bindgen::builder()
-        .header("hmmer/src/hmmer.h")
+        .header("wrapper.h")
         .clang_arg("-Ihmmer/easel")
         .clang_arg("-Ihmmer/src")
-        // initialization of SIMD code
-        .allowlist_function("impl_Init")
-        // log sum table
-        .allowlist_function("p7_FLogsumInit")
-        // getopts
-        .allowlist_function("esl_getopts_Create")
-        .allowlist_function("esl_getopts_Destroy")
-        // TODO: explain
-        .allowlist_function("esl_sqfile_OpenDigital")
-        .allowlist_function("esl_sq_CreateDigital")
-        .allowlist_function("p7_bg_Create")
-        .allowlist_function("p7_oprofile_ReadMSV")
-        .allowlist_function("p7_hmmfile_OpenE")
-        .allowlist_function("p7_hmmfile_Close")
-        .allowlist_function("esl_sqio_Read")
-        .allowlist_function("p7_tophits_Create")
-        .allowlist_function("p7_tophits_Destroy")
-        .allowlist_function("p7_pipeline_Create")
-        .allowlist_function("p7_pipeline_Destroy")
-        .allowlist_function("p7_pli_NewSeq")
-        .allowlist_function("esl_sq_Reuse")
-        .allowlist_type("P7_PIPELINE")
-        .allowlist_type("P7_TOPHITS")
-        .allowlist_function("p7_pli_NewModel")
-        .allowlist_function("p7_bg_SetLength")
-        .allowlist_function("p7_oprofile_ReconfigLength")
-        .allowlist_function("p7_Pipeline")
-        .allowlist_function("p7_oprofile_Destroy")
-        .allowlist_function("p7_pipeline_Reuse")
-        .allowlist_function("esl_alphabet_Destroy")
+        .allowlist_function("esl_.*")
+        .allowlist_type("esl_.*")
+        .allowlist_function("ESL_.*")
+        .allowlist_type("ESL_.*")
+        .allowlist_function("p7_.*")
+        .allowlist_type("p7_.*")
+        .allowlist_function("P7_.*")
+        .allowlist_type("P7_.*")
         .generate()
         .unwrap()
-        .write_to_file("src/hmmer.rs")
+        .write_to_file(out_dir.join("hmmer.rs"))
         .unwrap();
 
     // copy static libs

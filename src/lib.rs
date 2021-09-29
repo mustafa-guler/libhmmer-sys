@@ -1,3 +1,5 @@
+//! A light rust wrapper around [libhmmer](https://github.com/EddyRivasLab/hmmer) and [libeasel](https://github.com/EddyRivasLab/easel).
+
 #![allow(
     clippy::all,
     unused,
@@ -7,13 +9,4 @@
     deref_nullptr
 )]
 
-mod hmmer;
-pub use hmmer::*;
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
+include!(concat!(env!("OUT_DIR"), "/hmmer.rs"));
