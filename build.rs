@@ -76,6 +76,5 @@ fn main() {
     println!("cargo:rustc-link-lib=static=hmmer");
     println!("cargo:rustc-link-lib=static=easel");
 
-    // uncomment once we're done developing
-    // println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rerun-if-changed=build.rs");
 }
