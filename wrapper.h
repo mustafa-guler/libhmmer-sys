@@ -1,2 +1,2 @@
-#include "hmmer/src/hmmer.h"
-#include "hmmer/easel/esl_sqio.h"
+#include "src/hmmer.h"
+#include "easel/esl_sqio.h"

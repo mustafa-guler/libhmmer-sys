@@ -10,7 +10,7 @@ fn main() {
     let out_dir = Path::new(&out_dir);
 
     let copy_options = CopyOptions {
-        skip_exist: true,
+        overwrite: true,
         ..CopyOptions::new()
     };
 
@@ -31,7 +31,7 @@ fn main() {
         .current_dir(&hmmer_dir)
         .status()
         .expect("failed to autoconf");
-    Command::new(std::fs::canonicalize("./hmmer/configure").unwrap())
+    Command::new(std::fs::canonicalize(hmmer_dir.join("configure")).unwrap())
         .current_dir(&hmmer_dir)
         .status()
         .expect("failed to configure");
@@ -60,10 +60,12 @@ fn main() {
     // hmmer has a ton of `#include`s in the headers, meaning that we get a lot of libc in our
     // generated bindings unless we only `allowlist` elements that are prefixed with "p7" for the
     // hmmer repo and "esl" for the easel repo
+
+    std::fs::copy("wrapper.h", hmmer_dir.join("wrapper.h")).unwrap();
     bindgen::builder()
-        .header("wrapper.h")
-        .clang_arg("-Ihmmer/easel")
-        .clang_arg("-Ihmmer/src")
+        .header(hmmer_dir.join("wrapper.h").display().to_string())
+        .clang_arg(format!("-I{}", hmmer_dir.join("easel").display()))
+        .clang_arg(format!("-I{}", hmmer_dir.join("src").display()))
         .allowlist_function("esl_.*")
         .allowlist_type("esl_.*")
         .allowlist_function("ESL_.*")
@@ -78,8 +80,8 @@ fn main() {
         .unwrap();
 
     // copy static libs
-    std::fs::copy("hmmer/src/libhmmer.a", out_dir.join("libhmmer.a")).unwrap();
-    std::fs::copy("hmmer/easel/libeasel.a", out_dir.join("libeasel.a")).unwrap();
+    std::fs::copy(hmmer_dir.join("src/libhmmer.a"), out_dir.join("libhmmer.a")).unwrap();
+    std::fs::copy(hmmer_dir.join("easel/libeasel.a"), out_dir.join("libeasel.a")).unwrap();
 
     // link both archives to our library
     println!("cargo:rustc-link-search={}", out_dir.display());
@@ -87,4 +89,5 @@ fn main() {
     println!("cargo:rustc-link-lib=static=easel");
 
     println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rerun-if-changed=hmmer");
 }
