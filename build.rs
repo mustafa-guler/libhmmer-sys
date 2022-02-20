@@ -10,7 +10,7 @@ fn main() {
     let out_dir = Path::new(&out_dir);
 
     let copy_options = CopyOptions {
-        overwrite: true,
+        skip_exist: true,
         ..CopyOptions::new()
     };
 
