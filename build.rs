@@ -14,9 +14,10 @@ fn main() {
         ..CopyOptions::new()
     };
 
-    fs_extra::copy_items(&["hmmer"], out_dir, &copy_options).expect("failed to copy hmmer to target directory");
+    fs_extra::copy_items(&["hmmer"], out_dir, &copy_options)
+        .expect("failed to copy hmmer to target directory");
     let hmmer_dir = out_dir.join("hmmer");
-    
+
     // configure build
     //
     // the reason we're not using the `autotools` crate is we need a pretty particular setup:
@@ -66,10 +67,12 @@ fn main() {
         .header(hmmer_dir.join("wrapper.h").display().to_string())
         .clang_arg(format!("-I{}", hmmer_dir.join("easel").display()))
         .clang_arg(format!("-I{}", hmmer_dir.join("src").display()))
-        .allowlist_function("esl_.*")
-        .allowlist_type("esl_.*")
-        .allowlist_function("ESL_.*")
-        .allowlist_type("ESL_.*")
+        .allowlist_function("esl.*")
+        .allowlist_type("esl.*")
+        .allowlist_var("esl.*")
+        .allowlist_function("ESL.*")
+        .allowlist_type("ESL.*")
+        .allowlist_var("ESL.*")
         .allowlist_function("p7_.*")
         .allowlist_type("p7_.*")
         .allowlist_function("P7_.*")
@@ -81,7 +84,11 @@ fn main() {
 
     // copy static libs
     std::fs::copy(hmmer_dir.join("src/libhmmer.a"), out_dir.join("libhmmer.a")).unwrap();
-    std::fs::copy(hmmer_dir.join("easel/libeasel.a"), out_dir.join("libeasel.a")).unwrap();
+    std::fs::copy(
+        hmmer_dir.join("easel/libeasel.a"),
+        out_dir.join("libeasel.a"),
+    )
+    .unwrap();
 
     // link both archives to our library
     println!("cargo:rustc-link-search={}", out_dir.display());
@@ -90,4 +97,5 @@ fn main() {
 
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=hmmer");
+    println!("cargo:rerun-if-changed=wrapper.h");
 }
