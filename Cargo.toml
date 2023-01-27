@@ -31,6 +31,8 @@ exclude = [
     "hmmer/release-notes",
     "hmmer/easel/demotic/regress",
     "hmmer/documentation/userguide/inclusions/*.ai",
+    "hmmer/autom4te.cache",
+    "hmmer/documentation/userguide/*.tex",
 ]
 
 [dependencies]
