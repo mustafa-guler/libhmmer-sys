@@ -1,6 +1,6 @@
 [package]
 name = "libhmmer-sys"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2018"
 links = "hmmer"
 description = "Rust bindings to libhmmer and libeasel"
@@ -38,7 +38,7 @@ exclude = [
 [dependencies]
 
 [build-dependencies]
-bindgen = "0.59.1"
+bindgen = "0.65.1"
 fs_extra = "1.2.0"
 num_cpus = "^1.0"
 
