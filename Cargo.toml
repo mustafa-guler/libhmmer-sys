@@ -1,10 +1,10 @@
 [package]
-name = "libhmmer-sys"
-version = "0.4.0"
-edition = "2018"
+name = "libhmmer-sys-2"
+version = "0.1.0"
+edition = "2021"
 links = "hmmer"
 description = "Rust bindings to libhmmer and libeasel"
-repository = "https://github.com/mustafa-guler/libhmmer-sys"
+repository = "https://github.com/jianshu93/libhmmer-sys"
 categories = ["external-ffi-bindings", "science"]
 license = "BSD-3-Clause"
 readme = "README.md"

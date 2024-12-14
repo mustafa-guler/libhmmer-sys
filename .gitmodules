@@ -1,4 +1,4 @@
+
 [submodule "hmmer"]
 	path = hmmer
-	url = https://github.com/mustafa-guler/hmmer
-	branch = master
+	url = https://github.com/jianshu93/hmmer
